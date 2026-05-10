@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flashcards — Trigeminal pathways</title>
+<style>
+  :root{--bg:#f7f7fb;--card:#fff;--ink:#1f2937;--muted:#6b7280;--accent:#2563eb;--ok:#16a34a;--bad:#dc2626;--v1:#f59e0b;--v2:#8b5cf6;--v3:#10b981;--pass:#db2777;--passbg:#fce7f3}
+  *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#f8fafc,#eef2ff);color:var(--ink)}
+  header{padding:28px 18px 14px;max-width:1050px;margin:auto} h1{margin:0 0 8px;font-size:clamp(26px,4vw,42px)}
+  .sub{color:var(--muted);line-height:1.5}.wrap{max-width:1050px;margin:auto;padding:16px 18px 40px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 18px}.controls button{border:0;border-radius:999px;padding:10px 14px;background:white;box-shadow:0 4px 14px #0001;cursor:pointer;font-weight:650}.controls button.active{background:var(--accent);color:white}
+  .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.panel{background:rgba(255,255,255,.8);backdrop-filter:blur(8px);border-radius:24px;padding:18px;box-shadow:0 12px 30px #00000012}
+  .card{min-height:330px;background:var(--card);border-radius:22px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:inset 0 0 0 1px #e5e7eb}
+  .tag{display:inline-block;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:800;color:white}.V1{background:var(--v1)}.V2{background:var(--v2)}.V3{background:var(--v3)}
+  .question{font-size:clamp(28px,5vw,52px);font-weight:850;line-height:1.1;margin:22px 0}.hint{color:var(--muted);font-size:15px}.answer{display:none;margin-top:18px;border-top:1px dashed #d1d5db;padding-top:18px}.answer.show{display:block}
+  .path{font-size:20px;line-height:1.75;font-weight:750}.passage{display:inline-block;color:var(--pass);background:var(--passbg);border-radius:999px;padding:2px 9px;margin:0 2px;font-weight:900;white-space:normal}.small{color:var(--muted);font-size:14px;margin-top:10px}.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .btn{border:0;border-radius:16px;padding:13px 16px;font-weight:800;cursor:pointer}.primary{background:var(--accent);color:#fff}.ghost{background:#f3f4f6}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}
+  .score{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:white;border-radius:18px;padding:14px;text-align:center;box-shadow:0 4px 14px #0001}.num{font-size:26px;font-weight:900}.label{font-size:13px;color:var(--muted)}
+  details{background:white;border-radius:18px;padding:14px;margin-top:12px;box-shadow:0 4px 14px #0001}summary{font-weight:800;cursor:pointer}.list{font-size:14px;line-height:1.55;color:#374151;max-height:320px;overflow:auto}.footer{color:var(--muted);font-size:13px;margin-top:14px}
+  @media(max-width:850px){.grid{grid-template-columns:1fr}.card{min-height:280px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Flashcards — Trigeminal nerve pathways</h1>
+  <div class="sub"><b>Goal:</b> see a face/oral region, then recite the complete sensory pathway back to the trigeminal ganglion. Bony passages, foramina, fissures, canals, and notches are integrated directly in the pathway and highlighted in pink.</div>
+</header>
+<div class="wrap">
+  <div class="controls">
+    <button class="filter active" data-filter="all">All</button><button class="filter" data-filter="V1">V1</button><button class="filter" data-filter="V2">V2</button><button class="filter" data-filter="V3">V3</button>
+    <button id="shuffle">Shuffle</button><button id="reset">Reset score</button>
+  </div>
+  <div class="grid">
+    <section class="panel"><div class="card"><div><span id="tag" class="tag">V</span><div class="question" id="question">...</div><div class="hint">Recite out loud: region → small branch → main branch → passage(s) → trigeminal ganglion.</div><div class="answer" id="answer"><div class="path" id="path"></div><div class="small" id="note"></div></div></div><div class="btnrow"><button class="btn primary" id="show">Show answer</button><button class="btn bad" id="wrong">Review</button><button class="btn ok" id="right">Correct</button><button class="btn ghost" id="next">Next</button></div></div></section>
+    <aside class="panel">
+      <div class="score"><div class="stat"><div class="num" id="seen">0</div><div class="label">seen</div></div><div class="stat"><div class="num" id="good">0</div><div class="label">correct</div></div><div class="stat"><div class="num" id="review">0</div><div class="label">review</div></div></div>
+      <details open><summary>Quick rule</summary><div class="list"><p>In <b>All</b> mode, the V1/V2/V3 badge is hidden. You must figure out whether the pathway goes through the superior orbital fissure, foramen rotundum, or foramen ovale.</p><p>Pink pills = foramina, fissures, canals, grooves, notches, or important spaces from the course.</p></div></details>
+      <details><summary>All cards</summary><div class="list" id="allcards"></div></details>
+      <div class="footer">Exam tip: for “up to the ganglion,” recite from the region backwards: terminal branch → intermediate branch → V1/V2/V3 → trigeminal ganglion.</div>
+    </aside>
+  </div>
+</div>
+<script>
+const P=x=>`<span class="passage">${x}</span>`;
+const cards=[
+{d:'V1',q:'Forehead / anterior scalp',p:`supraorbital nerve or supratrochlear nerve → ${P('supraorbital notch/foramen if supraorbital')} → frontal nerve → ${P('superior orbital fissure')} → ophthalmic nerve (V1) → trigeminal ganglion`,n:'The frontal nerve divides into supraorbital and supratrochlear nerves.'},
+{d:'V1',q:'Medial upper eyelid',p:`supratrochlear nerve → frontal nerve → ${P('superior orbital fissure')} → ophthalmic nerve (V1) → trigeminal ganglion`,n:'Medial part of the upper eyelid.'},
+{d:'V1',q:'Lateral upper eyelid / lacrimal gland area',p:`lacrimal nerve → ${P('superior orbital fissure, lateral to the annulus of Zinn')} → ophthalmic nerve (V1) → trigeminal ganglion`,n:'The lacrimal nerve communicates with the zygomatic nerve of V2 through the orbitolacrimal arch.'},
+{d:'V1',q:'Cornea / eyeball',p:`long ciliary nerves → nasociliary nerve → ${P('superior orbital fissure, through the annulus of Zinn')} → ophthalmic nerve (V1) → trigeminal ganglion`,n:'Afferent limb of the corneal reflex.'},
+{d:'V1',q:'Skin between eyebrows / root of nose',p:`infratrochlear nerve → nasociliary nerve → ${P('superior orbital fissure, through the annulus of Zinn')} → ophthalmic nerve (V1) → trigeminal ganglion`,n:'Also supplies the lacrimal canal region.'},
+{d:'V1',q:'Tip of the nose',p:`external nasal branch → anterior ethmoidal nerve → ${P('anterior ethmoidal canal')} → nasociliary nerve → ${P('superior orbital fissure, through the annulus of Zinn')} → ophthalmic nerve (V1) → trigeminal ganglion`,n:'External branch of the anterior ethmoidal nerve.'},
+{d:'V1',q:'Anterior nasal cavity, septum and lateral wall',p:`internal nasal branch → anterior ethmoidal nerve → ${P('anterior ethmoidal canal')} → nasociliary nerve → ${P('superior orbital fissure, through the annulus of Zinn')} → ophthalmic nerve (V1) → trigeminal ganglion`,n:'General sensation from the anterior nasal walls.'},
+{d:'V1',q:'Sphenoidal sinus / posterior ethmoidal cells',p:`posterior ethmoidal nerve → nasociliary nerve → ${P('superior orbital fissure, through the annulus of Zinn')} → ophthalmic nerve (V1) → trigeminal ganglion`,n:'Collateral branch of the nasociliary nerve.'},
+{d:'V2',q:'Cheekbone / zygomatic skin of the cheek',p:`zygomaticofacial branch → ${P('zygomaticofacial foramen')} → temporozygomatic nerve → ${P('zygomatico-orbital foramen')} → zygomatic nerve → ${P('inferior orbital fissure')} → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Zygomatic nerve arises just after the foramen rotundum.'},
+{d:'V2',q:'Anterior temporal region',p:`zygomaticotemporal branch → ${P('zygomaticotemporal foramen')} → temporozygomatic nerve → ${P('zygomatico-orbital foramen')} → zygomatic nerve → ${P('inferior orbital fissure')} → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Temporal skin pathway through the zygomatic nerve.'},
+{d:'V2',q:'Lower eyelid',p:`palpebral branches → infraorbital nerve → ${P('infraorbital foramen')} → ${P('infraorbital canal')} → ${P('infraorbital groove')} → ${P('inferior orbital fissure')} → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Terminal branches of the infraorbital nerve.'},
+{d:'V2',q:'Ala / wing of the nose',p:`nasal branches → infraorbital nerve → ${P('infraorbital foramen')} → ${P('infraorbital canal')} → ${P('inferior orbital fissure')} → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Medial/nasal terminal branches of the infraorbital nerve.'},
+{d:'V2',q:'Upper lip',p:`superior labial branches → infraorbital nerve → ${P('infraorbital foramen')} → ${P('infraorbital canal')} → ${P('inferior orbital fissure')} → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Descending/labial branches.'},
+{d:'V2',q:'External cheek / superior cheek mucosa near the oral commissure',p:`labial branches → infraorbital nerve → ${P('infraorbital foramen')} → ${P('infraorbital canal')} → ${P('inferior orbital fissure')} → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'The course includes skin and mucosa of the cheek with infraorbital labial branches.'},
+{d:'V2',q:'Maxillary incisors and canines',p:`anterior superior alveolar nerve → ${P('anterior superior alveolar canal')} → infraorbital nerve → ${P('infraorbital canal')} → ${P('inferior orbital fissure')} → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Connects with the anterior part of the superior alveolar plexus.'},
+{d:'V2',q:'Maxillary premolars / first maxillary molar',p:`middle superior alveolar nerve → ${P('middle superior alveolar canal')} → infraorbital nerve → ${P('infraorbital canal')} → ${P('inferior orbital fissure')} → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Runs in the anterolateral wall of the maxillary sinus.'},
+{d:'V2',q:'Maxillary molars',p:`posterior superior alveolar nerves → ${P('alveolar foramina/holes on maxillary tuberosity')} → maxillary nerve (V2) → ${P('pterygopalatine fossa')} → ${P('foramen rotundum')} → trigeminal ganglion`,n:'They arise before V2 enters the orbit.'},
+{d:'V2',q:'Anterior hard palate',p:`nasopalatine nerve → ${P('incisive canal')} → ${P('sphenopalatine foramen')} → sphenopalatine nerve → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'The nasopalatine nerve runs along the nasal septum before entering the incisive canal.'},
+{d:'V2',q:'Posterior hard palate / anterior soft palate',p:`greater palatine nerve → ${P('greater palatine foramen')} → ${P('greater palatine canal')} → sphenopalatine nerve → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Ends toward the incisive canal and connects with the nasopalatine nerve.'},
+{d:'V2',q:'Soft palate / tonsillar region',p:`lesser palatine nerves → ${P('lesser palatine foramina')} → ${P('lesser palatine canals')} → sphenopalatine nerve → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Middle and posterior palatine nerves supply soft palate regions.'},
+{d:'V2',q:'Nasopharynx',p:`pharyngeal nerve → ${P('palatovaginal canal')} → sphenopalatine nerve → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Supplies nasopharyngeal mucosa.'},
+{d:'V2',q:'Superior and middle nasal conchae',p:`posterior superior nasal nerves → ${P('sphenopalatine foramen')} → sphenopalatine nerve → maxillary nerve (V2) → ${P('foramen rotundum')} → trigeminal ganglion`,n:'Three or four branches enter the nasal cavity through the sphenopalatine foramen.'},
+{d:'V3',q:'Lower external cheek / buccal region',p:`superficial cutaneous branches → buccal nerve → temporobuccal nerve → anterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'Sensory descending branch of the temporobuccal nerve.'},
+{d:'V3',q:'Inner cheek / buccal mucosa',p:`deep mucosal branches → buccal nerve → temporobuccal nerve → anterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'High-yield: buccal nerve = cheek mucosa.'},
+{d:'V3',q:'Vestibular gingiva of mandibular molars',p:`buccal nerve → temporobuccal nerve → anterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'In the course: vestibular gingiva of the inferior molar region.'},
+{d:'V3',q:'Mandibular molars and premolars',p:`inferior alveolar branch → ${P('mandibular canal')} → inferior alveolar nerve → ${P('mandibular foramen, behind the lingula')} → posterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'Runs with the inferior alveolar artery and vein.'},
+{d:'V3',q:'Mandibular incisors and canines',p:`incisal nerve → ${P('mandibular canal anterior continuation')} → inferior alveolar branch → inferior alveolar nerve → ${P('mandibular foramen')} → posterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'The incisal nerve stays inside the mandibular canal and runs anteriorly.'},
+{d:'V3',q:'Lower lip',p:`mental nerve → ${P('mental foramen')} → inferior alveolar branch → ${P('mandibular canal')} → inferior alveolar nerve → ${P('mandibular foramen')} → posterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'Mental nerve gives branches for lower lip mucosa, vestibular gingiva, and skin.'},
+{d:'V3',q:'Chin / mental region',p:`mental nerve → ${P('mental foramen')} → inferior alveolar branch → ${P('mandibular canal')} → inferior alveolar nerve → ${P('mandibular foramen')} → posterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'Cutaneous branches for the mental region.'},
+{d:'V3',q:'Anterior 2/3 of tongue — general sensation',p:`lingual nerve → ${P('infratemporal / pterygomaxillary fossa')} → posterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'Taste travels with chorda tympani of CN VII, but general sensation is V3 via the lingual nerve.'},
+{d:'V3',q:'Lingual gingiva of mandibular teeth',p:`lingual nerve → posterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'Branches of the lingual nerve.'},
+{d:'V3',q:'Sublingual mucosa / floor of the mouth',p:`lingual nerve → ${P('floor of mouth, around submandibular duct')} → posterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'The lingual nerve passes near the submandibular gland and duct.'},
+{d:'V3',q:'Temporomandibular joint',p:`auriculotemporal nerve or masseteric branch → mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'The course mentions TMJ branches through auriculotemporal and masseteric pathways.'},
+{d:'V3',q:'External acoustic meatus / external ear',p:`auriculotemporal nerve → ${P('retrocondylar space / parotid region')} → posterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'Auricular branches.'},
+{d:'V3',q:'Lateral temple',p:`auriculotemporal nerve → ${P('retrocondylar space / parotid region')} → posterior trunk of mandibular nerve (V3) → ${P('foramen ovale')} → trigeminal ganglion`,n:'Skin of the lateral temporal region.'}
+];
+let deck=[...cards],idx=0,filter='all',stats={seen:0,good:0,review:0};
+const $=id=>document.getElementById(id);
+function render(){if(!deck.length){$('question').textContent='No cards';return}const c=deck[idx%deck.length];$('tag').textContent=c.d;$('tag').className='tag '+c.d;$('tag').style.display=(filter==='all')?'none':'inline-block';$('question').textContent=c.q;$('path').innerHTML=c.p;$('note').textContent=c.n;$('answer').classList.remove('show')}
+function updateStats(){$('seen').textContent=stats.seen;$('good').textContent=stats.good;$('review').textContent=stats.review}
+function next(){idx=(idx+1)%deck.length;stats.seen++;updateStats();render()}
+function applyFilter(f){filter=f;deck=cards.filter(c=>f==='all'||c.d===f);idx=0;render()}
+document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');applyFilter(b.dataset.filter)});
+$('show').onclick=()=>$('answer').classList.toggle('show');$('next').onclick=next;$('right').onclick=()=>{stats.good++;next()};$('wrong').onclick=()=>{stats.review++;next()};$('shuffle').onclick=()=>{deck.sort(()=>Math.random()-.5);idx=0;render()};$('reset').onclick=()=>{stats={seen:0,good:0,review:0};updateStats();render()};
+$('allcards').innerHTML=cards.map(c=>`<p><b>${c.q}</b><br>${c.p}<br><span style="color:#6b7280">${c.n}</span></p>`).join('');
+render();updateStats();
+</script>
+</body>
+</html>
